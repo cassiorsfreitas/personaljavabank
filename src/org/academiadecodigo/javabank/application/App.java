@@ -7,21 +7,12 @@ import org.academiadecodigo.javabank.domain.Customer;
 import org.academiadecodigo.javabank.managers.AccountManager;
 
 
-public class BankApp {
-
-    //SANDBOX
-    AccountManager accountManager = new AccountManager();
-    Bank bank = new Bank(accountManager);
-    Customer customer1 = new Customer();
-    Customer customer2 = new Customer();
+public class App {
 
     private boolean validation = false;
+    private Customer customer;
 
-    public void start() {
-
-        //SANDBOX
-        bank.addCustomer(customer1);
-        bank.addCustomer(customer2);
+    public void start(Bank bank, AccountManager accountManager) {
 
         Prompt prompt = new Prompt(System.in, System.out);
         IntegerInputScanner questionNumberId = new IntegerInputScanner();
@@ -29,11 +20,13 @@ public class BankApp {
         while (!validation) {
             questionNumberId.setMessage("Please insert your costumer number: ");
             int customerId = prompt.getUserInput(questionNumberId);
-            validation = bank.checkCustomerId(customerId);
+            customer = bank.checkCustomerId(customerId);
+            if (customer != null) {
+                validation = true;
+            }
         }
 
-        Menu menu = new Menu();
-        menu.show();
-
+        Menu menu = new Menu(prompt, customer, accountManager);
+        menu.showMenu();
     }
 }

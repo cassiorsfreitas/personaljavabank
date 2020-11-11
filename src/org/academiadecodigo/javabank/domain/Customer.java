@@ -13,11 +13,8 @@ import java.util.Map;
 public class Customer {
 
     private AccountManager accountManager;
-    private Map<Integer, Account> accounts = new HashMap<>();
+    private final Map<Integer, Account> accounts = new HashMap<>();
     private int ID;
-
-    public Customer() {
-    }
 
     /**
      * Sets the account manager
@@ -67,11 +64,19 @@ public class Customer {
         return balance;
     }
 
-    public void setId(int id) {
+    public void setID(int id) {
         ID = id;
     }
 
     public int getID() {
         return ID;
+    }
+
+    public boolean hasAccount() {
+        return accounts.size() > 0;
+    }
+
+    public Map<Integer, Account> getAccounts() {
+        return accounts;
     }
 }
