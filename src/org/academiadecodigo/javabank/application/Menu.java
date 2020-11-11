@@ -6,10 +6,12 @@ import org.academiadecodigo.bootcamp.scanners.menu.MenuInputScanner;
 public class Menu {
 
     public void show() {
+
         Prompt prompt = new Prompt(System.in, System.out);
 
-        String[] options = {, "Make Deposit", "Make Withdraw", "Open Account", "Quit"};
+        String[] options = {"View Balance", "Make Deposit", "Make Withdraw", "Open Account", "Quit"};
         MenuInputScanner menu = new MenuInputScanner(options);
+        menu.setMessage("Welcome! Insert a number:");
 
         int optionPicked = prompt.getUserInput(menu);
 

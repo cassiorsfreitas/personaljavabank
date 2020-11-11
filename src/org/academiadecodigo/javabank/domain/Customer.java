@@ -14,6 +14,10 @@ public class Customer {
 
     private AccountManager accountManager;
     private Map<Integer, Account> accounts = new HashMap<>();
+    private int ID;
+
+    public Customer() {
+    }
 
     /**
      * Sets the account manager
@@ -63,4 +67,11 @@ public class Customer {
         return balance;
     }
 
+    public void setId(int id) {
+        ID = id;
+    }
+
+    public int getID() {
+        return ID;
+    }
 }

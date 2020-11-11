@@ -1,0 +1,6 @@
+unnamed package
+org.academiadecodigo.javabank.application
+org.academiadecodigo.javabank.domain
+org.academiadecodigo.javabank.domain.account
+org.academiadecodigo.javabank.managers
+org.academiadecodigo.javabank.test

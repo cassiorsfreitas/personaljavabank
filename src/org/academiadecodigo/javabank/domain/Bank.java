@@ -30,6 +30,7 @@ public class Bank {
      */
     public void addCustomer(Customer customer) {
         customers.add(customer);
+        customer.setId(customers.size());
         customer.setAccountManager(accountManager);
     }
 
@@ -47,5 +48,16 @@ public class Bank {
         }
 
         return balance;
+    }
+
+    public boolean checkCustomerId(int id) {
+
+        for (Customer customer : customers) {
+            if (id == customer.getID()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
