@@ -18,6 +18,7 @@ public class CheckingAccount extends Account {
 
     /**
      * @see Account#getAccountType()
+     * @return
      */
     @Override
     public AccountType getAccountType() {

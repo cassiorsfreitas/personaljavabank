@@ -24,6 +24,7 @@ public class SavingsAccount extends Account {
 
     /**
      * @see Account#getAccountType()
+     * @return
      */
     @Override
     public AccountType getAccountType() {

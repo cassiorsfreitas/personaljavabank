@@ -16,14 +16,14 @@ public class OpenAccount implements Operation {
         int optionPicked = prompt.getUserInput(menu);
 
         switch (optionPicked) {
-            case 1 -> {
+            case 1:
                 customer.openAccount(AccountType.CHECKING);
                 System.out.println("Account created!");
-            }
-            case 2 -> {
+                break;
+            case 2:
                 customer.openAccount(AccountType.SAVINGS);
                 System.out.println("Account created!");
-            }
+                break;
         }
 
     }
