@@ -1,6 +1,7 @@
 package org.academiadecodigo.javabank;
 
 import org.academiadecodigo.javabank.application.BankApplication;
+import org.academiadecodigo.javabank.application.BankApplicationView;
 import org.academiadecodigo.javabank.domain.Bank;
 import org.academiadecodigo.javabank.domain.Customer;
 import org.academiadecodigo.javabank.managers.AccountManager;
@@ -20,7 +21,7 @@ public class App {
         bank.addCustomer(c2);
         bank.addCustomer(c3);
 
-        BankApplication bankApplication = new BankApplication(bank);
-        bankApplication.start();
+        BankApplicationView bankApplicationView = new BankApplicationView(bank);
+        bankApplicationView.start();
     }
 }

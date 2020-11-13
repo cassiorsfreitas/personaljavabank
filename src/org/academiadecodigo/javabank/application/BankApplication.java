@@ -104,7 +104,7 @@ public class BankApplication {
         return mainMenu;
     }
 
-    private Map<Integer, Operation> buildOperationsMap() {
+    public Map<Integer, Operation> buildOperationsMap() {
 
         Map<Integer, Operation> map = new HashMap<>();
         map.put(UserOptions.GET_BALANCE.getOption(), new BalanceOperation(this));
