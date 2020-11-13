@@ -14,10 +14,10 @@ import java.util.Map;
 
 public class BankApplicationController {
 
-    private Bank bank;
+    private final Bank bank;
     private int accessingCustomerId;
     private Map<Integer, Operation> operationsMap;
-    private BankApplicationView bankApplicationView;
+    private final BankApplicationView bankApplicationView;
 
     public BankApplicationController(Bank bank, BankApplicationView bankApplicationView) {
         this.bank = bank;
