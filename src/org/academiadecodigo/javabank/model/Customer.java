@@ -1,6 +1,7 @@
 package org.academiadecodigo.javabank.model;
 
 import org.academiadecodigo.javabank.model.account.Account;
+import org.academiadecodigo.javabank.service.AccountLogic;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ public class Customer {
 
     private int id;
     private String name;
+    private AccountLogic accountLogic = new AccountLogic();
 
     private Map<Integer, Account> accounts = new HashMap<>();
 
@@ -95,7 +97,11 @@ public class Customer {
      * @param account the account to add
      */
     public void addAccount(Account account) {
-        accounts.put(account.getId(), account);
+        accountLogic.add(account.getId(), account);
+    }
+
+    public void setAccounts(Map<Integer, Account> accounts) {
+        this.accounts = accounts;
     }
 }
 
