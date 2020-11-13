@@ -1,6 +1,6 @@
 package org.academiadecodigo.javabank.application.operations.transaction;
 
-import org.academiadecodigo.javabank.application.BankApplication;
+import org.academiadecodigo.javabank.application.BankApplicationController;
 import org.academiadecodigo.javabank.application.UserOptions;
 
 /**
@@ -15,8 +15,8 @@ public class WithdrawOperation extends AbstractAccountTransactionOperation {
      *
      * @see AbstractAccountTransactionOperation
      */
-    public WithdrawOperation(BankApplication bankApplication) {
-        super(bankApplication);
+    public WithdrawOperation(BankApplicationController bankApplicationController) {
+        super(bankApplicationController);
     }
 
     /**

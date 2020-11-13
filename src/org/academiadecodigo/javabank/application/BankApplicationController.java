@@ -19,8 +19,9 @@ public class BankApplicationController {
     private Map<Integer, Operation> operationsMap;
     private BankApplicationView bankApplicationView;
 
-    public BankApplicationController(Bank bank) {
+    public BankApplicationController(Bank bank, BankApplicationView bankApplicationView) {
         this.bank = bank;
+        this.bankApplicationView = bankApplicationView;
     }
 
     public Bank getBank() {
@@ -55,6 +56,14 @@ public class BankApplicationController {
         }
 
         operationsMap.get(userChoice).execute();
-        menuLoop();
+        menuLoop(mainMenu);
+    }
+
+    public Prompt getPrompt() {
+        return bankApplicationView.getPrompt();
+    }
+
+    public void setAccessingCustomerId(int accessingCustomerId) {
+        this.accessingCustomerId = accessingCustomerId;
     }
 }

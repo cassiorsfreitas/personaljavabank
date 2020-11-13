@@ -1,6 +1,7 @@
 package org.academiadecodigo.javabank.application;
 
 import org.academiadecodigo.bootcamp.Prompt;
+import org.academiadecodigo.bootcamp.scanners.integer.IntegerSetInputScanner;
 import org.academiadecodigo.bootcamp.scanners.menu.MenuInputScanner;
 import org.academiadecodigo.javabank.domain.Bank;
 
@@ -12,7 +13,7 @@ public class BankApplicationView {
 
     public BankApplicationView(Bank bank) {
         this.prompt = new Prompt(System.in, System.out);
-        bankApplicationController = new BankApplicationController(bank);
+        bankApplicationController = new BankApplicationController(bank, this);
     }
 
     public Prompt getPrompt() {
@@ -21,6 +22,7 @@ public class BankApplicationView {
 
     public void start() {
         mainMenu = buildMainMenu();
+        bankApplicationController.setAccessingCustomerId(scanCustomerId());
         bankApplicationController.setOperationsMap(bankApplicationController.buildOperationsMap());
         bankApplicationController.menuLoop(mainMenu);
     }
@@ -32,5 +34,14 @@ public class BankApplicationView {
         mainMenu.setMessage(Messages.MENU_WELCOME);
 
         return mainMenu;
+    }
+
+    private int scanCustomerId() {
+
+        IntegerSetInputScanner scanner = new IntegerSetInputScanner(bankApplicationController.getBank().getCustomerIds());
+        scanner.setMessage(Messages.CHOOSE_CUSTOMER);
+        scanner.setError(Messages.ERROR_INVALID_CUSTOMER);
+
+        return prompt.getUserInput(scanner);
     }
 }
