@@ -1,16 +1,23 @@
 package org.academiadecodigo.javabank.model;
 
+import org.academiadecodigo.javabank.model.account.AbstractAccount;
 import org.academiadecodigo.javabank.model.account.Account;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * The customer model entity
  */
+@Entity
 public class Customer extends AbstractModel {
 
     private String name;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "customer", targetEntity = AbstractAccount.class)
     private List<Account> accounts = new ArrayList<>();
 
     /**
@@ -18,6 +25,7 @@ public class Customer extends AbstractModel {
      *
      * @return the customer name
      */
+
     public String getName() {
         return name;
     }
