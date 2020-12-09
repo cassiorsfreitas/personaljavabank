@@ -1,6 +1,7 @@
 package org.academiadecodigo.javabank.controller;
 
 import org.academiadecodigo.javabank.persistence.model.Customer;
+import org.academiadecodigo.javabank.persistence.model.account.Account;
 import org.academiadecodigo.javabank.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * Controller responsible for rendering {@link Customer} related views
@@ -46,7 +49,9 @@ public class CustomerController {
 
         //GET
         Customer customer = customerService.get(id);
+        List<Account> accounts = customer.getAccounts();
         //INJECT
+        model.addAttribute("accounts", accounts);
         model.addAttribute("customer", customer);
         //VIEW
         return "customer/customer";
