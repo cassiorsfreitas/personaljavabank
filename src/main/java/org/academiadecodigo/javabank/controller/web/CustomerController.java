@@ -24,9 +24,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.validation.Valid;
 
-/**
- * Controller responsible for rendering {@link Customer} related views
- */
 @Controller
 @RequestMapping("/customer")
 public class CustomerController {
@@ -68,9 +65,9 @@ public class CustomerController {
     }
 
     /**
-     * Sets the converter for converting between account model object and account DTO
+     * Sets the converter for converting between account customer model and account DTO
      *
-     * @param accountToAccountDto the account model object to account DTO converter to set
+     * @param accountToAccountDto the customer to customer DTO converter to set
      */
     @Autowired
     public void setAccountToAccountDto(AccountToAccountDto accountToAccountDto) {
@@ -140,8 +137,8 @@ public class CustomerController {
 
         model.addAttribute("account", accountDto);
         model.addAttribute("accountTransaction", accountTransactionDto);
-
         model.addAttribute("transfer", new TransferDto());
+
         return "customer/show";
     }
 
@@ -183,8 +180,6 @@ public class CustomerController {
      * @param id                 the customer id
      * @param redirectAttributes the redirect attributes object
      * @return the view to render
-     * @throws AssociationExistsException
-     * @throws CustomerNotFoundException
      */
     @RequestMapping(method = RequestMethod.GET, path = "{id}/delete")
     public String deleteCustomer(@PathVariable Integer id, RedirectAttributes redirectAttributes) throws AssociationExistsException, CustomerNotFoundException {

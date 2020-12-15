@@ -53,7 +53,7 @@ public class GlobalControllerExceptionHandler {
 
         ModelAndView model = new ModelAndView();
 
-        model.addObject("error", status == HttpStatus.BAD_REQUEST ? ex.getMessage() : "please try again later");
+        model.addObject("error", status == HttpStatus.BAD_REQUEST ? ex.getMessage() : "please try again latter");
         model.addObject("status", status);
         model.addObject("url", req.getRequestURL());
         model.addObject("timestamp", new Date().toString());

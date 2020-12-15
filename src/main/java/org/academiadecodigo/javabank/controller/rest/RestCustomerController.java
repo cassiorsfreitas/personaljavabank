@@ -1,11 +1,15 @@
 package org.academiadecodigo.javabank.controller.rest;
 
+import org.academiadecodigo.javabank.command.AccountDto;
 import org.academiadecodigo.javabank.command.CustomerDto;
+import org.academiadecodigo.javabank.converters.AccountToAccountDto;
 import org.academiadecodigo.javabank.converters.CustomerDtoToCustomer;
 import org.academiadecodigo.javabank.converters.CustomerToCustomerDto;
 import org.academiadecodigo.javabank.exceptions.AssociationExistsException;
 import org.academiadecodigo.javabank.exceptions.CustomerNotFoundException;
 import org.academiadecodigo.javabank.persistence.model.Customer;
+import org.academiadecodigo.javabank.persistence.model.account.Account;
+import org.academiadecodigo.javabank.services.AccountService;
 import org.academiadecodigo.javabank.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -19,7 +23,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST controller responsible for {@link Customer} related CRUD operations
@@ -30,8 +33,10 @@ import java.util.stream.Collectors;
 public class RestCustomerController {
 
     private CustomerService customerService;
+    private AccountService accountService;
     private CustomerDtoToCustomer customerDtoToCustomer;
     private CustomerToCustomerDto customerToCustomerDto;
+    private AccountToAccountDto accountToAccountDto;
 
     /**
      * Sets the customer service
@@ -41,6 +46,16 @@ public class RestCustomerController {
     @Autowired
     public void setCustomerService(CustomerService customerService) {
         this.customerService = customerService;
+    }
+
+    /**
+     * Sets the account service
+     *
+     * @param accountService the account service to set
+     */
+    @Autowired
+    public void setAccountService(AccountService accountService) {
+        this.accountService = accountService;
     }
 
     /**
@@ -64,18 +79,27 @@ public class RestCustomerController {
     }
 
     /**
+     * Sets the converter for converting between account customer model and account DTO
+     *
+     * @param accountToAccountDto the customer to customer DTO converter to set
+     */
+    @Autowired
+    public void setAccountToAccountDto(AccountToAccountDto accountToAccountDto) {
+        this.accountToAccountDto = accountToAccountDto;
+    }
+
+    /**
      * Retrieves a representation of the list of customers
      *
      * @return the response entity
      */
     @RequestMapping(method = RequestMethod.GET, path = {"/", ""})
-    public ResponseEntity<List<CustomerDto>> listCustomers() {
-
-        List<CustomerDto> customerDtos = customerService.list().stream()
-                .map(customer -> customerToCustomerDto.convert(customer))
-                .collect(Collectors.toList());
-
-        return new ResponseEntity<>(customerDtos, HttpStatus.OK);
+    public List<CustomerDto> listCustomers() {
+        List<CustomerDto> customerDtos = new ArrayList<>();
+        for (Customer customer : customerService.list()) {
+            customerDtos.add(customerToCustomerDto.convert(customer));
+        }
+        return customerDtos;
     }
 
     /**
@@ -119,7 +143,6 @@ public class RestCustomerController {
         // set headers with the created path
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(uriComponents.toUri());
-
         return new ResponseEntity<>(headers, HttpStatus.CREATED);
     }
 
@@ -138,7 +161,7 @@ public class RestCustomerController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        if (customerDto.getId() != null && !customerDto.getId().equals(id)) {
+        if (customerDto.getId() != null && customerDto.getId() != id) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
@@ -148,8 +171,8 @@ public class RestCustomerController {
 
         customerDto.setId(id);
 
-        customerService.save(customerDtoToCustomer.convert(customerDto));
-        return new ResponseEntity<>(HttpStatus.OK);
+        Customer savedCustomer = customerService.save(customerDtoToCustomer.convert(customerDto));
+        return new ResponseEntity<>(customerToCustomerDto.convert(savedCustomer), HttpStatus.OK);
     }
 
     /**
@@ -172,5 +195,77 @@ public class RestCustomerController {
         } catch (CustomerNotFoundException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    /**
+     * Retrieves a representation of the given customer accounts
+     *
+     * @param id the customer id
+     * @return the response entity
+     */
+    @RequestMapping(method = RequestMethod.GET, path = "/{id}/account")
+    public ResponseEntity<List<AccountDto>> listCustomerAccounts(@PathVariable Integer id) {
+
+        Customer customer = customerService.get(id);
+
+        if (customer == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        List<AccountDto> accountDtos = new ArrayList<>();
+        for (Account account : customer.getAccounts()) {
+            accountDtos.add(accountToAccountDto.convert(account));
+        }
+
+        return new ResponseEntity<>(accountDtos, HttpStatus.OK);
+    }
+
+    /**
+     * Retrieves a representation of the customer account
+     *
+     * @param id  the customer id
+     * @param aid the account id
+     * @return the response entity
+     */
+    @RequestMapping(method = RequestMethod.GET, path = "/{id}/account/{aid}")
+    public ResponseEntity<AccountDto> showCustomerAccount(@PathVariable Integer id, @PathVariable Integer aid) {
+
+        Account account = accountService.get(aid);
+        if (account == null || account.getCustomer() == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        if (account.getCustomer().getId() != id) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(accountToAccountDto.convert(account), HttpStatus.OK);
+    }
+
+    /**
+     * Deletes an account
+     *
+     * @param id  the customer id
+     * @param aid the account id
+     * @return the response entity
+     */
+    @RequestMapping(method = RequestMethod.DELETE, path = "/{id}/account/{aid}")
+    public ResponseEntity<AccountDto> deleteAccount(@PathVariable Integer id, @PathVariable Integer aid) {
+
+        Customer customer = customerService.get(id);
+
+        if (customer == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Account account = accountService.get(aid);
+        if (account == null || !customer.getAccounts().contains(account)) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        customer.removeAccount(account);
+        customerService.save(customer);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

@@ -5,7 +5,6 @@ import org.academiadecodigo.javabank.command.TransferDto;
 import org.academiadecodigo.javabank.converters.*;
 import org.academiadecodigo.javabank.exceptions.AccountNotFoundException;
 import org.academiadecodigo.javabank.exceptions.CustomerNotFoundException;
-import org.academiadecodigo.javabank.exceptions.TransactionInvalidException;
 import org.academiadecodigo.javabank.persistence.model.Customer;
 import org.academiadecodigo.javabank.persistence.model.Recipient;
 import org.academiadecodigo.javabank.services.CustomerService;
@@ -112,9 +111,9 @@ public class RecipientController {
     }
 
     /**
-     * Sets the converter for converting between account model object and account DTO
+     * Sets the converter for converting between account customer model and account DTO
      *
-     * @param accountToAccountDto the account model object to account DTO converter to set
+     * @param accountToAccountDto the customer to customer DTO converter to set
      */
     @Autowired
     public void setAccountToAccountDto(AccountToAccountDto accountToAccountDto) {
@@ -143,7 +142,7 @@ public class RecipientController {
             return "recipient/list";
 
         } catch (CustomerNotFoundException ex) {
-            return "redirect:/";
+            return "redirect:/customer/" + cid;
         }
     }
 
@@ -220,7 +219,7 @@ public class RecipientController {
      * Cancels the recipient DTO submission and renders a view with customer details
      *
      * @param cid the customer id
-     * @return the vuew to render
+     * @return the view to render
      */
     @RequestMapping(method = RequestMethod.POST, path = {"/{cid}/recipient/", "/{cid}/recipient"}, params = "action=cancel")
     public String cancelSaveRecipient(@PathVariable Integer cid) {
@@ -260,7 +259,7 @@ public class RecipientController {
             List<Recipient> recipients = customerService.listRecipients(cid);
             Customer customer = customerService.get(cid);
 
-            model.addAttribute("recipients", recipientToRecipientDto.convert(recipients));
+            model.addAttribute("recipients", recipients);
             model.addAttribute("customer", customerToCustomerDto.convert(customer));
             model.addAttribute("accounts", accountToAccountDto.convert(customer.getAccounts()));
             model.addAttribute("transfer", new TransferDto());
@@ -286,24 +285,19 @@ public class RecipientController {
     public String doTransfer(Model model, @PathVariable Integer cid, @Valid @ModelAttribute("transfer") TransferDto transferDto, BindingResult bindingResult, RedirectAttributes redirectAttributes) throws Exception {
 
         if (bindingResult.hasErrors()) {
+
             Customer customer = customerService.get(cid);
 
             model.addAttribute("customer", customerToCustomerDto.convert(customer));
             model.addAttribute("accounts", accountToAccountDto.convert(customer.getAccounts()));
-            model.addAttribute("recipients", recipientToRecipientDto.convert(customerService.listRecipients(cid)));
+            model.addAttribute("recipients", customerService.listRecipients(cid));
             redirectAttributes.addFlashAttribute("failure", "Transfer failed missing information");
             return "recipient/transfer";
         }
 
-        try {
-            transferService.transfer(transferDtoToTransfer.convert(transferDto), cid);
+        transferService.transfer(transferDtoToTransfer.convert(transferDto), cid);
 
-            redirectAttributes.addFlashAttribute("lastAction", "Transfered " + transferDto.getAmount() + " to account #" + transferDto.getDstId());
-            return "redirect:/customer/" + cid;
-
-        } catch (TransactionInvalidException ex) {
-            redirectAttributes.addFlashAttribute("failure", "Unable to perform transaction: value above the allowed amount");
-            return "redirect:/customer/" + cid + "/recipient/transfer";
-        }
+        redirectAttributes.addFlashAttribute("lastAction", "Transfered " + transferDto.getAmount() + " to account #" + transferDto.getDstId());
+        return "redirect:/customer/" + cid;
     }
 }

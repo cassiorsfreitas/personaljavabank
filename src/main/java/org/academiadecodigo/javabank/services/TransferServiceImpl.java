@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * A {@link TransferService} implementation
@@ -68,13 +66,14 @@ public class TransferServiceImpl implements TransferService {
     public void transfer(Transfer transfer, Integer customerId)
             throws CustomerNotFoundException, AccountNotFoundException, TransactionInvalidException {
 
-        Customer customer = Optional.ofNullable(customerDao.findById(customerId))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = customerDao.findById(customerId);
 
-        Account srcAccount = Optional.ofNullable(accountDao.findById(transfer.getSrcId()))
-                .orElseThrow(AccountNotFoundException::new);
-        Account dstAccount = Optional.ofNullable(accountDao.findById(transfer.getDstId()))
-                .orElseThrow(AccountNotFoundException::new);
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
+
+        Account srcAccount = accountDao.findById(transfer.getSrcId());
+        Account dstAccount = accountDao.findById(transfer.getDstId());
 
         if (!customer.getAccounts().contains(srcAccount)) {
             throw new AccountNotFoundException();
@@ -102,11 +101,9 @@ public class TransferServiceImpl implements TransferService {
     private void verifyTransferAccountInformation(Account srcAccount, Account dstAccount, double amount)
             throws AccountNotFoundException, TransactionInvalidException {
 
-        Optional.ofNullable(srcAccount)
-                .orElseThrow(AccountNotFoundException::new);
-
-        Optional.ofNullable(dstAccount)
-                .orElseThrow(AccountNotFoundException::new);
+        if (srcAccount == null || dstAccount == null) {
+            throw new AccountNotFoundException();
+        }
 
         if (!srcAccount.canDebit(amount) || !dstAccount.canCredit(amount)) {
             throw new TransactionInvalidException();
@@ -126,8 +123,11 @@ public class TransferServiceImpl implements TransferService {
 
     private List<Integer> listRecipientAccountIds(Customer customer) {
 
-        return customer.getRecipients().stream()
-                .map(Recipient::getAccountNumber)
-                .collect(Collectors.toList());
+        List<Integer> recipientAccountIds = new ArrayList<>();
+        for (Recipient recipient : customer.getRecipients()) {
+            recipientAccountIds.add(recipient.getAccountNumber());
+        }
+
+        return recipientAccountIds;
     }
 }

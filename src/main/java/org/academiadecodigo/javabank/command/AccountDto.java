@@ -1,6 +1,6 @@
 package org.academiadecodigo.javabank.command;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.academiadecodigo.javabank.persistence.model.account.Account;
 import org.academiadecodigo.javabank.persistence.model.account.AccountType;
 
@@ -11,20 +11,22 @@ import javax.validation.constraints.Pattern;
 /**
  * The {@link Account} data transfer object
  */
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class AccountDto {
 
     public static final String moneyRegex = "^\\$?0*[1-9]\\d*(\\.\\d{0,2})?|\\d*(\\.0[1-9])|\\d*(\\.[1-9]\\d?)?$?";
 
     private Integer id;
 
-    @NotNull(message = "AccountType is mandatory")
-    private AccountType type;
-
     @Pattern(regexp = moneyRegex, message = "Amount is not valid")
     @NotNull(message = "Initial amount is mandatory")
     @NotBlank(message = "Initial amount is mandatory")
-    private String balance;
+    @JsonIgnore
+    private String initialAmount;
+
+    @NotNull(message = "AccountType is mandatory")
+    private AccountType type;
+
+    private double balance;
 
     /**
      * Gets the id of the account DTO
@@ -45,11 +47,29 @@ public class AccountDto {
     }
 
     /**
+     * Gets the initial amount of the account DTO
+     *
+     * @return the initial amount
+     */
+    public String getInitialAmount() {
+        return initialAmount;
+    }
+
+    /**
+     * Sets the initial amount of the account DTO
+     *
+     * @param initialAmount the initial amount to set
+     */
+    public void setInitialAmount(String initialAmount) {
+        this.initialAmount = initialAmount;
+    }
+
+    /**
      * Gets the account DTO balance
      *
      * @return the account DTO balance
      */
-    public String getBalance() {
+    public double getBalance() {
         return balance;
     }
 
@@ -58,7 +78,7 @@ public class AccountDto {
      *
      * @param balance the account DTO balance to set
      */
-    public void setBalance(String balance) {
+    public void setBalance(double balance) {
         this.balance = balance;
     }
 
@@ -86,6 +106,7 @@ public class AccountDto {
     @Override
     public String toString() {
         return "AccountDto{" +
+                "initialAmount='" + initialAmount + '\'' +
                 ", type=" + type +
                 ", balance=" + balance +
                 '}';

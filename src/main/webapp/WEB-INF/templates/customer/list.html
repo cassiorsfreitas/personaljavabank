@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <thymeleaf th:replace="header :: header" />
+    <thymeleaf th:replace="header :: header"/>
 </head>
 <body>
 <div class="container">
@@ -32,6 +32,10 @@
                 <td><a class="btn btn-danger" th:href="@{'/customer/' + ${customer.id} + '/delete'}">Delete</a></td>
             </tr>
         </table>
+
+        <form th:method="POST" th:action="@{'/logout'}">
+            <input type="submit" value="Logout">
+        </form>
 
     </div>
 

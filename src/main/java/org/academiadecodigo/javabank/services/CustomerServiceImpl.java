@@ -1,10 +1,12 @@
 package org.academiadecodigo.javabank.services;
 
-import org.academiadecodigo.javabank.exceptions.*;
+import org.academiadecodigo.javabank.exceptions.AccountNotFoundException;
+import org.academiadecodigo.javabank.exceptions.CustomerNotFoundException;
+import org.academiadecodigo.javabank.exceptions.RecipientNotFoundException;
+import org.academiadecodigo.javabank.exceptions.TransactionInvalidException;
 import org.academiadecodigo.javabank.persistence.dao.AccountDao;
 import org.academiadecodigo.javabank.persistence.dao.CustomerDao;
 import org.academiadecodigo.javabank.persistence.dao.RecipientDao;
-import org.academiadecodigo.javabank.persistence.model.AbstractModel;
 import org.academiadecodigo.javabank.persistence.model.Customer;
 import org.academiadecodigo.javabank.persistence.model.Recipient;
 import org.academiadecodigo.javabank.persistence.model.account.Account;
@@ -13,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -67,12 +71,21 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public double getBalance(Integer id) throws CustomerNotFoundException {
 
-        Customer customer = Optional.ofNullable(customerDao.findById(id))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = customerDao.findById(id);
 
-        return customer.getAccounts().stream()
-                .mapToDouble(Account::getBalance)
-                .sum();
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
+
+        List<Account> accounts = customer.getAccounts();
+
+        double balance = 0;
+
+        for (Account account : accounts) {
+            balance += account.getBalance();
+        }
+
+        return balance;
     }
 
     /**
@@ -89,15 +102,7 @@ public class CustomerServiceImpl implements CustomerService {
      */
     @Transactional
     @Override
-    public void delete(Integer id) throws CustomerNotFoundException, AssociationExistsException {
-
-        Customer customer = Optional.ofNullable(customerDao.findById(id))
-                .orElseThrow(CustomerNotFoundException::new);
-
-        if (!customer.getAccounts().isEmpty()) {
-            throw new AssociationExistsException();
-        }
-
+    public void delete(Integer id) {
         customerDao.delete(id);
     }
 
@@ -117,12 +122,15 @@ public class CustomerServiceImpl implements CustomerService {
     public List<Recipient> listRecipients(Integer id) throws CustomerNotFoundException {
 
         // check then act logic requires transaction,
-        // event if read only
+        // even if read only
 
-        Customer customer = Optional.ofNullable(customerDao.findById(id))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = customerDao.findById(id);
 
-        return new ArrayList<>(customer.getRecipients());
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
+
+        return new ArrayList<>(customerDao.findById(id).getRecipients());
     }
 
     /**
@@ -130,10 +138,13 @@ public class CustomerServiceImpl implements CustomerService {
      */
     @Transactional
     @Override
-    public Recipient addRecipient(Integer id, Recipient recipient) throws CustomerNotFoundException, AccountNotFoundException {
+    public void addRecipient(Integer id, Recipient recipient) throws CustomerNotFoundException, AccountNotFoundException {
 
-        Customer customer = Optional.ofNullable(customerDao.findById(id))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = customerDao.findById(id);
+
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
 
         if (accountDao.findById(recipient.getAccountNumber()) == null ||
                 getAccountIds(customer).contains(recipient.getAccountNumber())) {
@@ -146,7 +157,6 @@ public class CustomerServiceImpl implements CustomerService {
         } else {
             recipientDao.saveOrUpdate(recipient);
         }
-        return customer.getRecipients().get(customer.getRecipients().size() - 1);
     }
 
     /**
@@ -156,13 +166,14 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void removeRecipient(Integer id, Integer recipientId) throws CustomerNotFoundException, RecipientNotFoundException {
 
-        Customer customer = Optional.ofNullable(customerDao.findById(id))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = customerDao.findById(id);
+        Recipient recipient = recipientDao.findById(recipientId);
 
-        Recipient recipient = Optional.ofNullable(recipientDao.findById(recipientId))
-                .orElseThrow(RecipientNotFoundException::new);
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
 
-        if (!customer.getRecipients().contains(recipient)) {
+        if (recipient == null || !recipient.getCustomer().getId().equals(id)) {
             throw new RecipientNotFoundException();
         }
 
@@ -175,20 +186,22 @@ public class CustomerServiceImpl implements CustomerService {
      */
     @Transactional
     @Override
-    public Account addAccount(Integer id, Account account) throws CustomerNotFoundException, TransactionInvalidException {
+    public void addAccount(Integer id, Account account) throws CustomerNotFoundException, TransactionInvalidException {
 
-        Customer customer = Optional.ofNullable(customerDao.findById(id))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = customerDao.findById(id);
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
+
 
         if (!account.canWithdraw() &&
                 account.getBalance() < SavingsAccount.MIN_BALANCE) {
             throw new TransactionInvalidException();
         }
 
+
         customer.addAccount(account);
         customerDao.saveOrUpdate(customer);
-
-        return customer.getAccounts().get(customer.getAccounts().size() - 1);
     }
 
     /**
@@ -199,13 +212,14 @@ public class CustomerServiceImpl implements CustomerService {
     public void closeAccount(Integer id, Integer accountId)
             throws CustomerNotFoundException, AccountNotFoundException, TransactionInvalidException {
 
-        Customer customer = Optional.ofNullable(customerDao.findById(id))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = customerDao.findById(id);
+        Account account = accountDao.findById(accountId);
 
-        Account account = Optional.ofNullable(accountDao.findById(accountId))
-                .orElseThrow(AccountNotFoundException::new);
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
 
-        if (!account.getCustomer().getId().equals(id)) {
+        if (account == null || !account.getCustomer().getId().equals(id)) {
             throw new AccountNotFoundException();
         }
 
@@ -219,11 +233,13 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private Set<Integer> getAccountIds(Customer customer) {
+        Set<Integer> accountIds = new HashSet<>();
         List<Account> accounts = customer.getAccounts();
 
-        return accounts.stream()
-                .map(AbstractModel::getId)
-                .collect(Collectors.toSet());
+        for (Account account : accounts) {
+            accountIds.add(account.getId());
+        }
+        return accountIds;
     }
 }
 

@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 /**
  * An {@link AccountService} implementation
  */
@@ -58,11 +56,16 @@ public class AccountServiceImpl implements AccountService {
     public void deposit(Integer id, Integer customerId, double amount)
             throws AccountNotFoundException, CustomerNotFoundException, TransactionInvalidException {
 
-        Customer customer = Optional.ofNullable(customerDao.findById(customerId))
-                .orElseThrow(CustomerNotFoundException::new);
+        Account account = accountDao.findById(id);
+        Customer customer = customerDao.findById(customerId);
 
-        Account account = Optional.ofNullable(accountDao.findById(id))
-                .orElseThrow(AccountNotFoundException::new);
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
+
+        if (account == null) {
+            throw new AccountNotFoundException();
+        }
 
         if (!account.getCustomer().getId().equals(customerId)) {
             throw new AccountNotFoundException();
@@ -89,11 +92,16 @@ public class AccountServiceImpl implements AccountService {
     public void withdraw(Integer id, Integer customerId, double amount)
             throws AccountNotFoundException, CustomerNotFoundException, TransactionInvalidException {
 
-        Customer customer = Optional.ofNullable(customerDao.findById(customerId))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = customerDao.findById(customerId);
+        Account account = accountDao.findById(id);
 
-        Account account = Optional.ofNullable(accountDao.findById(id))
-                .orElseThrow(AccountNotFoundException::new);
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
+
+        if (account == null) {
+            throw new AccountNotFoundException();
+        }
 
         // in UI the user cannot click on Withdraw so this is here for safety because the user can bypass
         // the UI limitation easily

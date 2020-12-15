@@ -9,8 +9,6 @@ import org.academiadecodigo.javabank.persistence.model.account.SavingsAccount;
 import org.academiadecodigo.javabank.services.AccountService;
 import org.academiadecodigo.javabank.services.CustomerService;
 
-import java.util.Optional;
-
 /**
  * A mock {@link AccountService} implementation
  */
@@ -42,11 +40,16 @@ public class MockAccountService extends AbstractMockService<Account> implements 
     public void deposit(Integer id, Integer customerId, double amount)
             throws CustomerNotFoundException, AccountNotFoundException, TransactionInvalidException {
 
-        Customer customer = Optional.ofNullable(customerService.get(customerId))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = customerService.get(customerId);
+        Account account = modelMap.get(id);
 
-        Account account = Optional.ofNullable(modelMap.get(id))
-                .orElseThrow(AccountNotFoundException::new);
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
+
+        if (account == null) {
+            throw new AccountNotFoundException();
+        }
 
         if (!account.getCustomer().getId().equals(customerId)) {
             throw new AccountNotFoundException();
@@ -72,13 +75,14 @@ public class MockAccountService extends AbstractMockService<Account> implements 
     public void withdraw(Integer id, Integer customerId, double amount)
             throws CustomerNotFoundException, AccountNotFoundException, TransactionInvalidException {
 
-        Customer customer = Optional.ofNullable(customerService.get(customerId))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = customerService.get(customerId);
+        Account account = get(id);
 
-        Account account = Optional.ofNullable(get(id))
-                .orElseThrow(AccountNotFoundException::new);
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
 
-        if (!account.getCustomer().getId().equals(customerId)) {
+        if (account == null || !account.getCustomer().getId().equals(customerId)) {
             throw new AccountNotFoundException();
         }
 

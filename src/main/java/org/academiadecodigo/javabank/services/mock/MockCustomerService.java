@@ -1,17 +1,17 @@
 package org.academiadecodigo.javabank.services.mock;
 
-import org.academiadecodigo.javabank.exceptions.AssociationExistsException;
 import org.academiadecodigo.javabank.exceptions.CustomerNotFoundException;
 import org.academiadecodigo.javabank.exceptions.RecipientNotFoundException;
-import org.academiadecodigo.javabank.persistence.model.AbstractModel;
 import org.academiadecodigo.javabank.persistence.model.Customer;
 import org.academiadecodigo.javabank.persistence.model.Recipient;
 import org.academiadecodigo.javabank.persistence.model.account.Account;
 import org.academiadecodigo.javabank.services.AccountService;
 import org.academiadecodigo.javabank.services.CustomerService;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A mock {@link CustomerService} implementation
@@ -43,12 +43,21 @@ public class MockCustomerService extends AbstractMockService<Customer> implement
     @Override
     public double getBalance(Integer id) throws CustomerNotFoundException {
 
-        Customer customer = Optional.ofNullable(modelMap.get(id))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = get(id);
 
-        return customer.getAccounts().stream()
-                .mapToDouble(Account::getBalance)
-                .sum();
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
+
+        List<Account> accounts = customer.getAccounts();
+
+        double balance = 0;
+
+        for (Account account : accounts) {
+            balance += account.getBalance();
+        }
+
+        return balance;
     }
 
     /**
@@ -69,14 +78,7 @@ public class MockCustomerService extends AbstractMockService<Customer> implement
      * @see CustomerService#delete(Integer)
      */
     @Override
-    public void delete(Integer id) throws AssociationExistsException {
-
-        Customer customer = get(id);
-
-        if (!customer.getAccounts().isEmpty()) {
-            throw new AssociationExistsException();
-        }
-
+    public void delete(Integer id) {
         modelMap.remove(id);
     }
 
@@ -94,22 +96,26 @@ public class MockCustomerService extends AbstractMockService<Customer> implement
     @Override
     public List<Recipient> listRecipients(Integer id) throws CustomerNotFoundException {
 
-        return Optional.ofNullable(modelMap.get(id))
-                .orElseThrow(CustomerNotFoundException::new)
-                .getRecipients();
+        Customer customer = get(id);
+
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
+
+        return customer.getRecipients();
     }
 
     /**
      * @see CustomerService#addRecipient(Integer, Recipient)
      */
     @Override
-    public Recipient addRecipient(Integer id, Recipient recipient) {
+    public void addRecipient(Integer id, Recipient recipient) {
 
         Customer customer = modelMap.get(id);
 
         if (accountService.get(recipient.getAccountNumber()) == null ||
                 getAccountIds(customer).contains(recipient.getAccountNumber())) {
-            return null;
+            return;
         }
 
         if (recipient.getId() == null) {
@@ -118,7 +124,6 @@ public class MockCustomerService extends AbstractMockService<Customer> implement
 
         customer.addRecipient(recipient);
 
-        return recipient;
     }
 
     /**
@@ -128,8 +133,11 @@ public class MockCustomerService extends AbstractMockService<Customer> implement
     public void removeRecipient(Integer id, Integer recipientId)
             throws CustomerNotFoundException, RecipientNotFoundException {
 
-        Customer customer = Optional.ofNullable(modelMap.get(id))
-                .orElseThrow(CustomerNotFoundException::new);
+        Customer customer = modelMap.get(id);
+
+        if (customer == null) {
+            throw new CustomerNotFoundException();
+        }
 
         Recipient recipient = null;
 
@@ -139,7 +147,7 @@ public class MockCustomerService extends AbstractMockService<Customer> implement
             }
         }
 
-        if (recipient == null) {
+        if (recipient == null || !recipient.getCustomer().getId().equals(id)) {
             throw new RecipientNotFoundException();
         }
 
@@ -150,10 +158,9 @@ public class MockCustomerService extends AbstractMockService<Customer> implement
      * @see CustomerService#addAccount(Integer, Account)
      */
     @Override
-    public Account addAccount(Integer id, Account account) {
+    public void addAccount(Integer id, Account account) {
         Customer customer = get(id);
         customer.addAccount(account);
-        return account;
     }
 
     /**
@@ -162,18 +169,27 @@ public class MockCustomerService extends AbstractMockService<Customer> implement
     @Override
     public void closeAccount(Integer cid, Integer accountId) {
         Customer customer = modelMap.get(cid);
+        Account accountToRemove = null;
 
-        customer.getAccounts().stream()
-                .filter(account -> account.getId().equals(accountId))
-                .findFirst()
-                .ifPresent(customer::removeAccount);
+        for (Account account : customer.getAccounts()) {
+            if (account.getId().equals(accountId)) {
+                accountToRemove = account;
+            }
+        }
+
+        if (accountToRemove != null) {
+            customer.removeAccount(accountToRemove);
+        }
     }
 
     private Set<Integer> getAccountIds(Customer customer) {
+        Set<Integer> accountIds = new HashSet<>();
         List<Account> accounts = customer.getAccounts();
 
-        return accounts.stream()
-                .map(AbstractModel::getId)
-                .collect(Collectors.toSet());
+        for (Account account : accounts) {
+            accountIds.add(account.getId());
+        }
+        return accountIds;
     }
+
 }

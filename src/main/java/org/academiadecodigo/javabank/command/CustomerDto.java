@@ -101,6 +101,7 @@ public class CustomerDto {
         this.email = email;
     }
 
+
     /**
      * Gets the phone of the customer DTO
      *

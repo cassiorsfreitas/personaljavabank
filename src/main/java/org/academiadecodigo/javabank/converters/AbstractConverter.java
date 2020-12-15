@@ -4,11 +4,9 @@ import org.springframework.core.convert.converter.Converter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * A generic converter to be used as a base for concrete converter implementations
- *
  * @param <S> the source type
  * @param <T> the target type
  */
@@ -22,9 +20,13 @@ public abstract class AbstractConverter<S, T> implements Converter<S, T> {
      */
     public List<T> convert(List<S> listToConvert) {
 
-        return listToConvert.stream()
-                .map(this::convert)
-                .collect(Collectors.toList());
+        List<T> conversions = new ArrayList<>(listToConvert.size());
+
+        for (S toConvert : listToConvert) {
+            conversions.add(convert(toConvert));
+        }
+
+        return conversions;
     }
 
 }

@@ -37,7 +37,7 @@ public class AccountDtoToAccount implements Converter<AccountDto, Account> {
         Account account = null;
 
         account = accountFactory.createAccount(accountDto.getType());
-        account.credit(accountDto.getBalance() != null ? Double.parseDouble(accountDto.getBalance()) : 0);
+        account.credit(accountDto.getInitialAmount() != null ? Double.parseDouble(accountDto.getInitialAmount()) : 0);
 
         return account;
     }

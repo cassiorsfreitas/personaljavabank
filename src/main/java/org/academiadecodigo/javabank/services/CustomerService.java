@@ -70,7 +70,7 @@ public interface CustomerService {
      * @throws CustomerNotFoundException
      * @throws AccountNotFoundException
      */
-    Recipient addRecipient(Integer id, Recipient recipient)
+    void addRecipient(Integer id, Recipient recipient)
             throws CustomerNotFoundException, AccountNotFoundException;
 
     /**
@@ -93,7 +93,7 @@ public interface CustomerService {
      * @throws CustomerNotFoundException
      * @throws TransactionInvalidException
      */
-    Account addAccount(Integer id, Account account)
+    void addAccount(Integer id, Account account)
             throws CustomerNotFoundException, TransactionInvalidException;
 
     /**

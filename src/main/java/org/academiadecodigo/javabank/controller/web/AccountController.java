@@ -4,10 +4,8 @@ import org.academiadecodigo.javabank.command.AccountDto;
 import org.academiadecodigo.javabank.command.AccountTransactionDto;
 import org.academiadecodigo.javabank.command.TransferDto;
 import org.academiadecodigo.javabank.converters.AccountDtoToAccount;
-import org.academiadecodigo.javabank.converters.CustomerToCustomerDto;
 import org.academiadecodigo.javabank.converters.TransferDtoToTransfer;
 import org.academiadecodigo.javabank.exceptions.TransactionInvalidException;
-import org.academiadecodigo.javabank.persistence.model.Customer;
 import org.academiadecodigo.javabank.persistence.model.account.Account;
 import org.academiadecodigo.javabank.services.AccountService;
 import org.academiadecodigo.javabank.services.CustomerService;
@@ -36,7 +34,6 @@ public class AccountController {
 
     private AccountDtoToAccount accountDtoToAccount;
     private TransferDtoToTransfer transferDtoToTransfer;
-    private CustomerToCustomerDto customerToCustomerDto;
 
     /**
      * Sets the customer service
@@ -89,16 +86,6 @@ public class AccountController {
     }
 
     /**
-     * Sets the converter for converting between customer model objects and customer DTO
-     *
-     * @param customerToCustomerDto the customer to customer DTO converter to set
-     */
-    @Autowired
-    public void setCustomerToCustomerDto(CustomerToCustomerDto customerToCustomerDto) {
-        this.customerToCustomerDto = customerToCustomerDto;
-    }
-
-    /**
      * Adds an account
      *
      * @param cid                the customer id
@@ -118,6 +105,7 @@ public class AccountController {
         try {
             Account account = accountDtoToAccount.convert(accountDto);
             customerService.addAccount(cid, account);
+            //redirectAttributes.addFlashAttribute("customer", customerService.get(cid));
             redirectAttributes.addFlashAttribute("lastAction", "Created " + account.getAccountType() + " account.");
             return "redirect:/customer/" + cid;
 
