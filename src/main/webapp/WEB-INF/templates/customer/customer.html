@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>JavaBank</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+          modelType="text/css"/>
+    <script modelType="application/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script modelType="application/javascript" async
+            src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h2>CUSTOMER DETAILS</h2>
+    <div>
+        <div id="img">
+            <img width="100%"
+                 src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQj4_a-oCnUlWQplHy2L46qP9XzItfFNS_uFQ&usqp=CAU"
+                 alt="profile" title="profile">
+        </div>
+        <div id="details">
+            <h3 th:text="${customer.firstName} + ' ' + ${customer.lastName}"></h3>
+            <p><b>Last updated: </b></p>
+            <p th:text="${customer.creationTime}"></p>
+            <p><b>Email: </b></p>
+            <p th:text="${customer.email}"></p>
+            <p><b>Phone: </b></p>
+            <p th:text="${customer.phone}"></p>
+            <p><a href="#displayDiv">View accounts</a></p>
+        </div>
+
+        <div id="displayDiv">
+            <table class="table table-striped">
+                <tr>
+                    <th>Account type</th>
+                    <th>Balance</th>
+                </tr>
+                <tr th:each="account : ${accounts}">
+                    <td th:text="${account.getAccountType()}"></td>
+                    <td th:text="${account.getBalance()}"></td>
+
+                </tr>
+            </table>
+            Donec rutrum congue leo eget malesuada. Cras ultricies ligula sed magna dictum porta. Donec rutrum congue
+            leo eget malesuada.
+        </div>
+    </div>
+    <a th:href="@{/customer/list}">< Return</a>
+</div>
+
+
+<style>
+    #img {
+        border: 3px solid #000000;
+        border-radius: 10px;
+        float: left;
+    }
+
+    #details {
+        margin-left: 38%;
+    }
+
+    #displayDiv {
+        display: none;
+    }
+
+    #displayDiv:target {
+        width: 100%;
+        background-color: #dddddd;
+        display: block;
+        padding: 5%;
+    }
+
+
+</style>
+</body>
+</html>
+

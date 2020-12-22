@@ -1,7 +1,7 @@
 package org.academiadecodigo.javabank.services;
 
-import org.academiadecodigo.javabank.model.Customer;
-import org.academiadecodigo.javabank.model.Recipient;
+import org.academiadecodigo.javabank.persistence.model.Customer;
+import org.academiadecodigo.javabank.persistence.model.Recipient;
 
 import java.util.List;
 import java.util.Set;
@@ -28,6 +28,13 @@ public interface CustomerService {
     double getBalance(Integer id);
 
     /**
+     * Gets a list of the customers
+     *
+     * @return the customers list
+     */
+    List<Customer> list();
+
+    /**
      * Gets the set of customer account ids
      *
      * @param id the customer id
@@ -42,4 +49,6 @@ public interface CustomerService {
      * @return the list of recipients of the customer
      */
     List<Recipient> listRecipients(Integer id);
+
+    void delete(Integer id);
 }
